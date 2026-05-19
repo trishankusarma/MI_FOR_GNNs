@@ -1,31 +1,6 @@
 import torch
 import torch_geometric.data as data
 
-def CreateDataLoader():
-    # A simple 4-node diamond graph: 0 -> 1 -> 3, 0 -> 2 -> 3
-    edge_index = torch.tensor([[0, 0, 1, 2],
-                               [1, 2, 3, 3]], dtype=torch.long) #<num_edges, 2>
-    edge_weight = torch.tensor([1.0, 4.0, 2.0, 1.0], dtype=torch.float) # Path 0-1-3 = 3, Path 0-2-3 = 5 <num_edges, 1>
-    
-    num_nodes = 4
-    source_node = 0
-    
-    # Track 1: Shortest Path (SP) initialization
-    x_sp = torch.full((num_nodes, 1), 1e5) # Use a large number for infinity <num_nodes, 1>
-    x_sp[source_node] = 0.0
-    
-    # Track 2: BFS (Reachability) initialization
-    x_bfs = torch.zeros((num_nodes, 1)) # <num_nodes, 1>
-    x_bfs[source_node] = 1.0
-    
-    # Concatenate parallel tracks: Shape <num_nodes, 2>
-    x = torch.cat([x_sp, x_bfs], dim=-1)
-    
-    # True labels (Ground Truth distances from node 0)
-    y_distances = torch.tensor([0.0, 1.0, 4.0, 3.0], dtype=torch.float) #<num_nodes, 1>
-    
-    return data.Data(x=x, edge_index=edge_index, edge_weight=edge_weight, y=y_distances)
-
 def corrupt_input_data(clean_data: data.Data) -> data.Data:
     """
     Corrupts data based on Eq 12:
