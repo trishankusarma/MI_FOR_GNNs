@@ -1,0 +1,49 @@
+
+ScAI_User@DESKTOP-LT1U6R2 MINGW64 ~/Desktop/research/MI_FOR_GNNs (main)
+$ bash run_model.sh
+Starting training loop across 313 mini-batches...
+--- Epoch 1/20 ---
+Epoch Loss: 12481889.477245
+--- Epoch 2/20 ---
+Epoch Loss: 7328.300230
+--- Epoch 3/20 ---
+Epoch Loss: 5861.539622
+--- Epoch 4/20 ---
+Epoch Loss: 4063.073442
+--- Epoch 5/20 ---
+Epoch Loss: 3616.148619
+--- Epoch 6/20 ---
+Epoch Loss: 2140.346512
+--- Epoch 7/20 ---
+Epoch Loss: 2452.275327
+--- Epoch 8/20 ---
+Epoch Loss: 3040.198885
+--- Epoch 9/20 ---
+Epoch Loss: 1034.082479
+--- Epoch 10/20 ---
+Epoch Loss: 1885.407439
+--- Epoch 11/20 ---
+Epoch Loss: 1571.728721
+--- Epoch 12/20 ---
+Epoch Loss: 667.593983
+--- Epoch 13/20 ---
+Epoch Loss: 1291.811961
+--- Epoch 14/20 ---
+Epoch Loss: 730.249407
+--- Epoch 15/20 ---
+Epoch Loss: 1068.070356
+--- Epoch 16/20 ---
+Epoch Loss: 1153.904064
+--- Epoch 17/20 ---
+Epoch Loss: 820.177750
+--- Epoch 18/20 ---
+Epoch Loss: 388.893405
+--- Epoch 19/20 ---
+Epoch Loss: 648.603745
+--- Epoch 20/20 ---
+Epoch Loss: 773.595024
+
+--- Initiating Mechanistic Evaluation ---
+--- Circuit Discovery Complete (K=10) ---
+Identified 10 critical parameters out of 128.
+Isolated Circuit Loss (FID-): 54531.585938

@@ -19,7 +19,7 @@ def discover_circuit(model, clean_data, corrupted_data, K=10):
     loss.backward()
     
     # Grab the target parameter matrix
-    target_param = next(p for name, p in model.named_parameters() if 'mlp.weight' in name)
+    target_param = next(p for name, p in model.named_parameters() if 'mlp' in name and 'weight' in name)
     
     # Let's use the first-order Taylor score for this demonstration
     scores = torch.abs(target_param * target_param.grad)
@@ -44,7 +44,7 @@ def evaluate_circuit_sufficiency(model, clean_data, circuit_mask):
     Tests FID-: Evaluates the model using ONLY the discovered circuit weights.
     """
     # Clone original weights so we don't permanently ruin our trained model
-    target_param = next(p for name, p in model.named_parameters() if 'mlp.weight' in name)
+    target_param = next(p for name, p in model.named_parameters() if 'mlp' in name and 'weight' in name)
     original_weights = target_param.data.clone()
     
     try:

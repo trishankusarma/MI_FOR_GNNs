@@ -9,6 +9,7 @@ from src.scores import first_order_taylor_weight_grad
 from src.circuit_discovery import discover_circuit, evaluate_circuit_sufficiency
 
 ROOT_DATA_PATH = "./data"
+MAX_DISTANCE_THRESHOLD = 1e5 
 
 def run_epoch(model, loader, optimizer):
     """
@@ -16,37 +17,42 @@ def run_epoch(model, loader, optimizer):
     """
     model.train()
     epoch_loss = 0.0
+    nodes_counted = 0
     
     for batch_idx, batch_data in enumerate(loader):
         # 1. Clear gradients for the new batch
         optimizer.zero_grad()
-        
+
         # 2. Forward Pass on the batched graph matrix
+        # Both tensors are now cleanly shaped [Num_Nodes, 1]
         output = model(batch_data.x, batch_data.edge_index, batch_data.edge_weight)
+
+        # 3. Masked Loss (Only compute MSE for reachable nodes where y < 1e5)
+        reachable_mask = (batch_data.y < MAX_DISTANCE_THRESHOLD).squeeze(-1)  # Returns a boolean tensor
+
+        if reachable_mask.sum() == 0:
+            continue # Skip batch if no reachable target nodes exist
         
-        # Calculate MSE loss matching the current batch size targets
-        loss = torch.mean((output[:, 0] - batch_data.y) ** 2) 
+        # 4. Compute MSE only on the masked elements
+        loss = torch.mean((output.squeeze(-1)[reachable_mask] - batch_data.y.squeeze(-1)[reachable_mask]) ** 2)
         
-        # 3. Backward Pass
+        # 5. Backward Pass
         loss.backward()
+
+        # 5. Gradient Clipping
+        # Prevents any residual mathematical anomalies from shattering the weights
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         
-        # 4. Step the optimizer to actually update the weights!
+        # 6. Step the optimizer to actually update the weights!
         optimizer.step()
         
-        # Track running loss safely scales by number of graphs in the current batch
-        epoch_loss += loss.item() * batch_data.num_graphs
+        # Track loss relative to the number of valid nodes evaluated
+        epoch_loss += loss.item() * reachable_mask.sum().item()
+        nodes_counted += reachable_mask.sum().item()
 
     # Calculate average loss over the entire dataset footprint
-    avg_loss = epoch_loss / len(loader.dataset)
-    
-    # 5. Score Tracking: Print WeightGrad sensitivity once per epoch closure
-    with torch.no_grad():
-        for name, param in model.named_parameters():
-            if 'mlp.weight' in name:
-                scores = first_order_taylor_weight_grad(param)
-                print(f"Epoch Loss: {avg_loss:.4f} | Layer {name} Current Scores:\n", scores)
-                
-    return scores
+    avg_loss = epoch_loss / nodes_counted if nodes_counted > 0 else 0
+    print(f"Epoch Loss: {avg_loss:.6f}")
 
 if __name__=="__main__":
     # step 1: Load configurations and Dataset
@@ -60,7 +66,7 @@ if __name__=="__main__":
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     
     # step 2: Initialize model architecture
-    model = MinAggGNNLayer(config.in_channels, config.out_channels)
+    model = MinAggGNNLayer(config.in_channels, config.hidden_layers, config.out_channels)
     
     # step 3: Initialize tracking optimizers
     optimizer = torch.optim.Adam(

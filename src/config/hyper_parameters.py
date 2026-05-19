@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 @dataclass
 class HyperParameters:
@@ -12,7 +12,8 @@ class HyperParameters:
 
     # model.py
     in_channels:int = 2
-    out_channels:int = 10
+    hidden_layers: list[int] = field(default_factory=lambda: [64])
+    out_channels:int = 1
 
     # train.py
     num_epochs: int = 20
@@ -20,4 +21,4 @@ class HyperParameters:
     weight_decay:float = 1e-2
 
     # circuit size
-    k: int = 2
+    k: int = 10
